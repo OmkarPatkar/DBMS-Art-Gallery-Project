@@ -1,0 +1,266 @@
+CREATE or replace type customer_ty as object(
+cust_id NUMBER,
+cust_Name VARCHAR2(50),
+cust_Phone VARCHAR2(13),
+cust_Address VARCHAR2(100));
+/
+
+create table customer of customer_ty;
+
+INSERT INTO customer VALUES(1,'robin','9897564323','apsara apartment,laalbaug');
+INSERT INTO customer VALUES(2,'ben','9897576953','teen apartment,khar');
+INSERT INTO customer VALUES(3,'rich','9897452753','aazad apartment,bandra');
+INSERT INTO customer VALUES(4,'paul','98977865953','tez apartment,andheri');
+
+select * from customer;
+
+CREATE or replace type ArtistDetail as object(
+artist_id NUMBER ,
+artist_name VARCHAR2(50),
+artist_Phone VARCHAR2(13),
+artist_specialization VARCHAR2(50),
+artist_ratings VARCHAR2(13),
+artist_contry VARCHAR2(13),
+artist_Address VARCHAR2(100));
+/
+
+create table Artist of ArtistDetail;
+
+INSERT INTO Artist VALUES(1,'bob','9897564323','lanscape','8','india','tech apartment,bhandup');
+INSERT INTO Artist VALUES(2,'rob','9897576953','lanscape','8','india','mess apartment,kurla');
+INSERT INTO Artist VALUES(3,'prince','9897452753','lanscape','8','india','ram apartment,churchgate');
+INSERT INTO Artist VALUES(4,'jan','98977865953','lanscape','8','india','boss apartment,andheri');
+
+select * from Artist;
+
+ select * from Artist
+ where artist_ratings <='8';
+  
+
+ select * from Artist
+ where artist_contry='india';  
+  
+CREATE OR REPLACE TYPE art_object AS OBJECT(
+art_object_id NUMBER,
+art_object_title VARCHAR2(20),
+art_object_date DATE,
+art_object_type VARCHAR2(13),
+member function getDetails return varchar2,
+member function getPrice return NUMBER
+)NOT FINAL;
+/
+
+......................................................................//paintingDetails...................................................................................
+
+CREATE OR REPLACE TYPE paintingDetails UNDER art_object
+( painting_type VARCHAR2(20),
+ painting_style VARCHAR2(20),
+ painting_size varchar2(10),
+ painting_price NUMBER,
+ OVERRIDING MEMBER FUNCTION getDetails RETURN VARCHAR2,
+ OVERRIDING MEMBER FUNCTION getPrice RETURN NUMBER);
+ /
+ 
+
+create or replace type body paintingDetails
+as
+OVERRIDING MEMBER FUNCTION getDetails RETURN VARCHAR2
+is
+begin
+return to_char(art_object_title) || ' ' || to_char(painting_type);
+end;
+OVERRIDING MEMBER FUNCTION getPrice RETURN NUMBER
+is
+begin
+if(painting_type='water color') then
+return 2000;
+elsif (painting_type='oil paint') then
+return 4000;
+end if;
+end;
+end;
+/
+
+ create table paintDet of paintingDetails;
+
+insert into paintDet values(01,'nature',to_date('12-2-1198','dd-mm-yyyy'),'painting','water color','landscape','4x4',25000);
+insert into paintDet values(02,'nature1',to_date('12-2-1198','dd-mm-yyyy'),'painting','oil paint','potrait','6x4',35000);
+insert into paintDet values(03,'nature2',to_date('12-2-1198','dd-mm-yyyy'),'painting','water color','abstract','8x6',50000); 
+ 
+select p.art_object_id,p.art_object_title,p.art_object_date,p.art_object_type,p.painting_type,p.getDetails(),p.getPrice() from paintDet p;
+ 
+create or replace trigger zeroprice
+before insert on paintDet
+for each row
+begin
+if(:new.painting_price=0 or :new.painting_price<100000000) then
+raise_application_error(-20010,'invalid price');
+end if;
+end;
+/
+
+select * from paintDet where painting_type='oil paint';
+
+select * from paintDet where painting_style='landscape';
+
+select * from paintDet
+where painting_price between 20000 and 40000;
+......................................................................//sculptureDet...................................................................................
+
+
+CREATE OR REPLACE TYPE sculptureDetails UNDER art_object
+( sculpture_material VARCHAR2(20),
+ sculpture_height VARCHAR2(20),
+ sculpture_weight VARCHAR2(20),
+ sculpture_img bfile,
+ sculpture_price NUMBER,
+ OVERRIDING MEMBER FUNCTION getDetails RETURN VARCHAR2,
+ OVERRIDING MEMBER FUNCTION getPrice RETURN NUMBER);
+ /
+ 
+
+create or replace type body sculptureDetails
+as
+OVERRIDING MEMBER FUNCTION getDetails RETURN VARCHAR2
+is
+begin
+return to_char(art_object_title) || ' ' || to_char(sculpture_material);
+end;
+OVERRIDING MEMBER FUNCTION getPrice RETURN NUMBER
+is
+begin
+if(sculpture_material='metal') then
+return 15000;
+elsif (sculpture_material='plaster') then
+return 12000;
+end if;
+end;
+end;
+/
+
+ create table sculptureDet of sculptureDetails;
+
+create or replace directory img_dir as 'C:\';
+ 
+insert into sculptureDet values(01,'human',to_date('12-2-1198','dd-mm-yyyy'),'sculpture','metal','5','30',bfilename('img_dir','bl.jpg'),55000);
+insert into sculptureDet values(01,'still art',to_date('12-2-1198','dd-mm-yyyy'),'sculpture','plaster','2','13',bfilename('img_dir','bl.jpg'),32000);
+insert into sculptureDet values(01,'animal',to_date('12-2-1198','dd-mm-yyyy'),'sculpture','plaster','6','43',bfilename('img_dir','bl.jpg'),65000); 
+ 
+ 
+
+select p.art_object_id,p.art_object_title,p.art_object_date,p.sculpture_material,p.sculpture_height,p.getDetails(),p.getPrice() from sculptureDet p;
+
+
+
+
+......................................................................//exhibitionDetails...................................................................................
+
+create table exhibitionDetails(
+ex_date DATE,
+end_date DATE,
+ex_capacity varchar2(10),
+ex_location SDO_GEOMETRY
+);
+
+
+insert into exhibitionDetails values(to_date('12-2-2000','dd-mm-yyyy'),to_date('14-2-2000','dd-mm-yyyy'),'30', SDO_GEOMETRY(2003, NULL,NULL, SDO_ELEM_INFO_ARRAY(1,1003,3),SDO_ORDINATE_ARRAY(1,1,4,3) ) );
+insert into exhibitionDetails values(to_date('12-2-2002','dd-mm-yyyy'),to_date('18-2-2002','dd-mm-yyyy'),'20',SDO_GEOMETRY(2003, NULL,NULL, SDO_ELEM_INFO_ARRAY(1,1003,2),SDO_ORDINATE_ARRAY(4,1,6,3) ) );
+insert into exhibitionDetails values(to_date('14-2-2004','dd-mm-yyyy'),to_date('16-2-2004','dd-mm-yyyy'),'30',SDO_GEOMETRY(2003, NULL,NULL, SDO_ELEM_INFO_ARRAY(1,1003,4),SDO_ORDINATE_ARRAY(7,2,4,3) ) );
+insert into exhibitionDetails values(to_date('7-2-2006','dd-mm-yyyy'),to_date('14-2-2006','dd-mm-yyyy'),'40',SDO_GEOMETRY(2003, NULL,NULL, SDO_ELEM_INFO_ARRAY(1,1003,1),SDO_ORDINATE_ARRAY(8,1,8,3) ) );
+
+insert into user_sdo_geom_metadata
+(table name, column name,diminfo, srid)values('exhibitionDetails','ex_location', SDO_DIM_ARRAY( SDO_DIM_ELEMENT('x', 0,20,0.005), SDO_DIM_ELEMENT('y', 0,20,0.005) ), NULL));
+
+
+
+
+......................................................................//xmlwala...................................................................................
+
+
+Create table sold_items(
+ID NUMBER,
+scu_material XMLTYPE
+);
+
+
+insert into sold_items values(
+1,XMLTYPE('
+<PRODUCT>
+<PID>01</PID>
+<PNAME>nature</PNAME>
+<ANAME>bob</ANAME>
+<DETAILS>
+<TYPE>painting</TYPE>
+<SDATE>25/01/2018</SDATE>
+<PRICE>25000</PRICE>
+</DETAILS>
+</PRODUCT>
+'));
+
+insert into sold_items values(
+1,XMLTYPE('
+<PRODUCT>
+<PID>02</PID>
+<PNAME>nature1</PNAME>
+<ANAME>rob</ANAME>
+<DETAILS>
+<TYPE>painting</TYPE>
+<SDATE>15/06/2018</SDATE>
+<PRICE>35000</PRICE>
+</DETAILS>
+</PRODUCT>
+'));
+
+insert into sold_items values(
+1,XMLTYPE('
+<PRODUCT>
+<PID>03</PID>
+<PNAME>human</PNAME>
+<ANAME>prince</ANAME>
+<DETAILS>
+<TYPE>sculpture</TYPE>
+<SDATE>06/06/2018</SDATE>
+<PRICE>55000</PRICE>
+</DETAILS>
+</PRODUCT>
+'));
+
+select * from sold_items;
+
+
+
+Extract XML Fragment for details of product with TYPE='painting'
+select p.scu_material.extract('/PRODUCT/DETAILS[TYPE="painting"]').getStringVal() "DETAILS" from sold_items p;
+
+
+Insert a row with id=04 
+insert into sold_items values(
+1,XMLTYPE('
+<PRODUCT>
+<PID>04</PID>
+<PNAME>still</PNAME>
+<ANAME>jan</ANAME>
+<DETAILS>
+<TYPE>sculpture</TYPE>
+<SDATE>26/03/2018</SDATE>
+<PRICE>32000</PRICE>
+</DETAILS>
+</PRODUCT>
+'));
+
+select * from sold_items;
+
+
+
+
+
+Display the date on which product ‘02’ was sold.
+select p.scu_material.extract('/PRODUCT[PID="02"]/DETAILS/SDATE/text()').getStringVal()
+from sold_items p;
+
+
+
+
+
+
+ 
